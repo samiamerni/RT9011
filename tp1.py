@@ -2,7 +2,7 @@ import socket
 import time
 import datetime
 import json
-localIP     = "192.168.1.40"##"10.145.16.75"
+localIP     = "10.192.50.77"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
@@ -12,21 +12,27 @@ bytesToSend =  bytes.fromhex("12")
 
 # Opening JSON file
 def openconfigfile():
-    f = open('config.json')
+    f = open('../config.json')
     data = json.load(f)
     stringjson = data["strings"]["chooseDrinkText"]
     return stringjson
 
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
-    successut = 1 
+    successut = 1  ### x01 en entier est 1   1 == succes 0 == echoue
     UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
-    returnUT = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        returnUT = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        return "inconc"
+    
     code = returnUT[0][1:2]
     if successut.__eq__(int.from_bytes(code, "big")) :
         print("initialisation UT reussite")
+        return "success"
     else:
         print("initialisation UT echoué")
+        return "fail"
 
 
 def initiateDatagram():
@@ -41,35 +47,37 @@ def sendto(UDPServerSocket):
 
 def recerivefrom(UDPServerSocket):
     print("UDP server up and listening")
-    # Listen for incoming datagrams
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        return "inconc"
     return bytesAddressPair
 
 def decode(bytesAddressPair,stringjson):
     print(datetime.datetime.fromtimestamp(time.time()),bytesAddressPair[0])
-    split1 = bytesAddressPair[0][:1]
-    split2 = bytesAddressPair[0][1:2]
+    code = bytesAddressPair[0][:1]
+    lent = bytesAddressPair[0][1:2]
     split3 = bytesAddressPair[0][2:]
     stringresult = split3.decode("utf-8") 
-    decode = int.from_bytes(split2, "big")    
-    print(stringresult)
-    print(split1,split2,split3,decode)
-    if stringresult.__eq__(stringjson):
+    lent = int.from_bytes(lent, "big")  
+    code = int.from_bytes(code, "big")  ### equivalent de x11 est 17 en entier   
+    if stringresult.__eq__(stringjson) and code == 17 :
         print('aucune boisson n\'a été selectionnée et aucun prix n\'est affiché')
+        return "sucess"
     else:
         print('une boisson est peut etre selectionné')   
-
-
+        return "fail"
 
 
 if __name__ == "__main__":
     UDPServerSocket = initiateDatagram()
-    initializeUT(UDPServerSocket)
+    resultUT= initializeUT(UDPServerSocket)
+    print("initialisateur:",resultUT)
     sendto(UDPServerSocket)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     stringjson = openconfigfile()
-    decode(bytesAddressPair,stringjson)
-
+    resultFinal= decode(bytesAddressPair,stringjson)
+    print("resultat final",resultFinal)
 
 
  
