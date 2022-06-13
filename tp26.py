@@ -94,12 +94,25 @@ def recupererboisson(bytesAddressPair):
         print("la boisson n'a pas ete disponible/recupérée")
         return False
 
-def recupererNbrGoblets(bytesAddressPair):
+
+def checkIfCanSelectSuggar(bytesAddressPair):
     print(bytesAddressPair[0])
-    code = bytesAddressPair[0][2:3]  
-    goblets =int.from_bytes(code, "big")
-    print("le nbr de goblets est de: ",goblets)
-    return goblets
+    codesuggar = bytesAddressPair[0][1:2]   
+    codesuggar =int.from_bytes(codesuggar, "big")
+    if  codesuggar == 0:
+        print("le sucre n'a pas été selectioné")
+        return False
+    else:
+        print("le sucre a pas été selectioné")
+        return True
+
+
+def recupererNbrSucre(bytesAddressPair):
+    print(bytesAddressPair[0])
+    code = bytesAddressPair[0][1:2]  
+    sucre =int.from_bytes(code, "big")
+    print("le nbr de sucre est de: ",sucre)
+    return sucre
  
 
 def checkIfMonnaieRecuperer(bytesAddressPair):
@@ -114,12 +127,12 @@ def checkIfMonnaieRecuperer(bytesAddressPair):
         print("la monnaie n\'a été recuprée")
         return False
 
-def compareGoblets(avant,apres):
+def compareSucre(avant,apres):
     if avant > apres:
-        print('nombre de goblets deminué')
+        print('nombre de sucre a deminué')
         return True
     else:
-        print('nombre de goblets n\'est pas deminué')
+        print('nombre de sucre n\'a pas deminué')
         return False
 
 
@@ -138,11 +151,15 @@ if __name__ == "__main__":
     ## recuperer avant machine
     sendto(UDPServerSocket,bytes.fromhex("10"))
     infos =recerivefrom(UDPServerSocket)
-    goblets_avant= recupererNbrGoblets(infos)
+    goblets_avant= recupererNbrSucre(infos)
     ## selectionner une boisson
     sendto(UDPServerSocket,first)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+    ### check if possible to select suggar
+    sendto(UDPServerSocket,bytes.fromhex("2209"))
+    validatesuggar =recerivefrom(UDPServerSocket)
+    checkIfCanSelectSuggar(validatesuggar) 
     ### valider la boisson
     sendto(UDPServerSocket,bytes.fromhex("23"))
     validatedrink =recerivefrom(UDPServerSocket)
@@ -162,7 +179,7 @@ if __name__ == "__main__":
     ## recuperer avant machine
     sendto(UDPServerSocket,bytes.fromhex("10"))
     infos =recerivefrom(UDPServerSocket)
-    goblets_apres= recupererNbrGoblets(infos)
+    goblets_apres= recupererNbrSucre(infos)
     ### comaprer nbr goblets
-    compareGoblets(goblets_avant,goblets_apres)
+    compareSucre(goblets_avant,goblets_apres)
 
