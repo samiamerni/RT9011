@@ -1,7 +1,7 @@
 import socket
+import time
 import datetime
 import json
-import time
 
 localIP     = "10.188.168.50"
 localPort   = 3000
@@ -10,6 +10,13 @@ bufferSize  = 1024
 msgFromServer  = "120"
 
 
+
+# Opening JSON file
+def openconfigfile():
+    f = open('../config.json')
+    data = json.load(f)
+    stringjson = data["strings"]
+    return stringjson
 
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
@@ -43,6 +50,7 @@ def recerivefrom(UDPServerSocket):
         return initverdic
     return bytesAddressPair
 
+
 def initiateDatagram():
     # Create a datagram socket
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -55,29 +63,55 @@ def sendto(UDPServerSocket,bytesToSend):
 
 
 
-
 def checkIfCanSelectDrink(bytesAddressPair):
     print(bytesAddressPair[0])
     codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
     codereturn =int.from_bytes(codereturn, "big")
     if codereturn == 1:
-        print("une boisson a été selectionnée alors qu'il n'ya plus de goblets")
+        print("une boisson a été selectionnée")
         return False
     else:
         print("la boisson n'a pas ete selectionnée")
-        return True
+        return False
 
-def GobletSetToZero(bytesAddressPair):
+
+def checkIfCanSelectSuggar(bytesAddressPair):
     print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]  
-    codereturn =int.from_bytes(codereturn, "big")
-    print("-------------------",codereturn)
-    if codereturn == 1:
-        print("Goblets  mis a zero")
+    codesuggar = bytesAddressPair[0][1:2]   
+    codesuggar =int.from_bytes(codesuggar, "big")
+    if  codesuggar == 0:
+        print("le sucre n'a pas été selectionné parce que le nombre de sucre disponible est inferieur")
         return True
     else:
-        print("echou de la  mise a zero des goblets")
+        print("le sucre a  été selectionné")
         return False
+
+
+def recupererNbrSucre(bytesAddressPair):
+    print(bytesAddressPair[0])
+    code = bytesAddressPair[0][1:2]  
+    sucre =int.from_bytes(code, "big")
+    print("le nbr de sucre est de: ",sucre)
+    return sucre
+ 
+
+def SucreSetToZero(bytesAddressPair):
+    print(bytesAddressPair[0])
+    codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
+    codereturn =int.from_bytes(codereturn, "big")
+    if codereturn == 1:
+        print("mise a jour de sucre reussi")
+        return True
+    else:
+        print("mise a jour de sucre echoué")
+        return False
+
+
+
+
+
 
 
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
@@ -88,15 +122,22 @@ if __name__ == "__main__":
     first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
-    #initializeUT(UDPServerSocket)
-    ### set nb goblets to zero
-    sendto(UDPServerSocket,bytes.fromhex("0300"))
+    initializeUT(UDPServerSocket)
+    ## recuperer avant machine
+    sendto(UDPServerSocket,bytes.fromhex("10"))
+    infos =recerivefrom(UDPServerSocket)
+    sucre_avant= recupererNbrSucre(infos)
+    ### set nb sucre to zero
+    sendto(UDPServerSocket,bytes.fromhex("0202"))
     bytesAddressPair =recerivefrom(UDPServerSocket)
-    print(bytesAddressPair)
-    GobletSetToZero(bytesAddressPair)
+    SucreSetToZero(bytesAddressPair)
     ## selectionner une boisson
     sendto(UDPServerSocket,first)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+    ### check if possible to select suggar
+    sendto(UDPServerSocket,bytes.fromhex("2209"))
+    validatesuggar =recerivefrom(UDPServerSocket)
+    checkIfCanSelectSuggar(validatesuggar) 
 
 

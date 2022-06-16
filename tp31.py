@@ -43,6 +43,7 @@ def recerivefrom(UDPServerSocket):
         return initverdic
     return bytesAddressPair
 
+
 def initiateDatagram():
     # Create a datagram socket
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -59,24 +60,26 @@ def sendto(UDPServerSocket,bytesToSend):
 def checkIfCanSelectDrink(bytesAddressPair):
     print(bytesAddressPair[0])
     codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
     codereturn =int.from_bytes(codereturn, "big")
     if codereturn == 1:
-        print("une boisson a été selectionnée alors qu'il n'ya plus de goblets")
-        return False
+        print("une boisson a été selectionnée")
+        return True
     else:
         print("la boisson n'a pas ete selectionnée")
-        return True
+        return False
 
-def GobletSetToZero(bytesAddressPair):
+
+def DrinkSetToZero(bytesAddressPair):
     print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]  
+    codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
     codereturn =int.from_bytes(codereturn, "big")
-    print("-------------------",codereturn)
     if codereturn == 1:
-        print("Goblets  mis a zero")
+        print("mise a jour nombre boisson a un ")
         return True
     else:
-        print("echou de la  mise a zero des goblets")
+        print("echou de ma  mise a jour du nombre de boisson")
         return False
 
 
@@ -88,12 +91,11 @@ if __name__ == "__main__":
     first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
-    #initializeUT(UDPServerSocket)
-    ### set nb goblets to zero
-    sendto(UDPServerSocket,bytes.fromhex("0300"))
+    initializeUT(UDPServerSocket)
+    ### set nb drinks to zero
+    sendto(UDPServerSocket,bytes.fromhex("040001"))
     bytesAddressPair =recerivefrom(UDPServerSocket)
-    print(bytesAddressPair)
-    GobletSetToZero(bytesAddressPair)
+    DrinkSetToZero(bytesAddressPair)
     ## selectionner une boisson
     sendto(UDPServerSocket,first)
     bytesAddressPair =recerivefrom(UDPServerSocket)
