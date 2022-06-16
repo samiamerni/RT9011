@@ -1,3 +1,0 @@
-Time,IdTest,Action,RepId,lenghtString,Attendu,Observe,Verdic,Message,VersionOutil
-2022-06-15 23:37:03.030851,0,b'\x00',b'\x01',NaN,b'\x01',success,pass,b'\x01\x01',v1
-2022-06-15 23:37:03.032845,1,b'\x12',17,23,Choisissez une boisson.,pass,b'\x11\x17Choisissez une boisson.',v1
