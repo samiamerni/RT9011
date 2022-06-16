@@ -13,14 +13,13 @@ Portmachine   = 4200
 bufferSize  = 1024
 msgFromServer  = "12"
 bytesToSend =  bytes.fromhex(msgFromServer)
-idinitialiaze=0
-idTp=1
-null_= "NaN"
-v1_="v1"
+idTp = 1
+null_ = "NaN"
+v1_ = "v1"
 time_data = 0
 
 
-listelogname = ["Time","IdTest","Action","RepId","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
+listelogname = ["Time","IdTp","Action","RepId","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
 listeinit = []
 listedata = []
 
@@ -43,14 +42,14 @@ def initializeUT(UDPServerSocket):
         returnUT = UDPServerSocket.recvfrom(bufferSize)
     except socket.timeout:
         initverdic="inconc"
-        resultinc=[time_,idinitialiaze,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
+        resultinc=[time_,idTp,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
         listeinit.extend(resultinc)
         return initverdic
     
     coderp = returnUT[0][1:2]
     repid = returnUT[0][:1]
     initmsgreturn_=returnUT[0]
-    resultreq=[time_,idinitialiaze,msginitialiaze,repid,null_,coderp]
+    resultreq=[time_,idTp ,msginitialiaze,repid,null_,coderp]
     listeinit.extend(resultreq)
     if successut.__eq__(int.from_bytes(coderp, "big")) :
         print("initialisation UT reussite")
@@ -61,8 +60,8 @@ def initializeUT(UDPServerSocket):
         return initsucess
     else:
         print("initialisation UT echoué")
-        initfail="erreur"
-        initverdic="fail"
+        initfail="error"
+        initverdic="error"
         resulterror = [initfail,initverdic,initmsgreturn_,v1_]
         listeinit.extend(resulterror)
         return initfail
@@ -86,7 +85,7 @@ def recerivefrom(UDPServerSocket):
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
     except socket.timeout:
         initverdic="inconc"
-        resultinc=[time_data,idinitialiaze,bytesToSend,null_,null_,null_,null_,initverdic,null_,v1_]
+        resultinc=[time_data,idTp,bytesToSend,null_,null_,null_,null_,initverdic,null_,v1_]
         listedata.extend(resultinc)
         return initverdic
     return bytesAddressPair
@@ -106,20 +105,20 @@ def decode(bytesAddressPair,stringjson):
         print('aucune boisson n\'a été selectionnée et aucun prix n\'est affiché')
         datasucess="success"
         dataverdic="pass"
-        resultsuccess= [stringresult,dataverdic,msgreturn_,v1_]
+        resultsuccess= [stringresult,datasucess,dataverdic,msgreturn_,v1_]
         listedata.extend(resultsuccess)
         return datasucess
     else:
         print('une boisson est peut etre selectionné')   
-        dataverdic="fail"
-        resulterror = [dataverdic,dataverdic,msgreturn_,v1_]
+        dataverdic="error"
+        resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
         listedata.extend(resulterror)
         return dataverdic
 
 def logfile():
-    with open("log.xls", 'a', encoding='UTF8', newline='') as flog:
+    with open("log.csv", 'a', encoding='UTF8', newline='') as flog:
         writer=csv.writer(flog)
-        testfile=os.stat("log.xls").st_size == 0
+        testfile=os.stat("log.csv").st_size == 0
         if testfile is True:
             writer.writerow(listelogname)
             writer.writerow(listeinit)
