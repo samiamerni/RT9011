@@ -2,7 +2,7 @@ import socket
 import time
 import datetime
 import json
-localIP     = "10.30.5.10"
+localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
@@ -10,23 +10,37 @@ msgFromServer  = "120"
 
 
 
-# Opening JSON file
-def openconfigfile():
-    f = open('config.json')
-    data = json.load(f)
-    stringjson = data["strings"]
-    return stringjson
-
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
     successut = 1 
     UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
-    returnUT = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        returnUT = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+
     code = returnUT[0][1:2]
     if successut.__eq__(int.from_bytes(code, "big")) :
         print("initialisation UT reussite")
+        initsucess="success"
+        initverdic="pass"
+        return initsucess
     else:
-        print("initialisation UT echoué")
+        print("initialisation UT echoué")        
+        initfail="erreur"
+        initverdic="fail"
+        return initfail
+
+def recerivefrom(UDPServerSocket):
+    print("UDP server up and listening")
+    # Listen for incoming datagrams
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+    return bytesAddressPair
 
 
 def initiateDatagram():
@@ -39,11 +53,7 @@ def initiateDatagram():
 def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
 
-def recerivefrom(UDPServerSocket):
-    print("UDP server up and listening")
-    # Listen for incoming datagrams
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    return bytesAddressPair
+
 
 
 def checkIfCanSelectDrink(bytesAddressPair):
@@ -53,10 +63,8 @@ def checkIfCanSelectDrink(bytesAddressPair):
     codereturn =int.from_bytes(codereturn, "big")
     if codereturn == 1:
         print("une boisson a été selectionnée")
-        return False
     else:
         print("la boisson n'a pas ete selectionée")
-        return False
 
 
 def checkIfValidateDrink(bytesAddressPair):
@@ -94,5 +102,4 @@ if __name__ == "__main__":
     sendto(UDPServerSocket,second)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink2 = checkIfCanSelectDrink(bytesAddressPair) 
-    print("resultat du test",selectdrink2)
 

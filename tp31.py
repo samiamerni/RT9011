@@ -1,7 +1,8 @@
 import socket
-import time
 import datetime
 import json
+import time
+
 localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
@@ -9,13 +10,6 @@ bufferSize  = 1024
 msgFromServer  = "120"
 
 
-
-# Opening JSON file
-def openconfigfile():
-    f = open('config.json')
-    data = json.load(f)
-    stringjson = data["strings"]
-    return stringjson
 
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
@@ -62,51 +56,31 @@ def sendto(UDPServerSocket,bytesToSend):
 
 
 
+
 def checkIfCanSelectDrink(bytesAddressPair):
     print(bytesAddressPair[0])
     codereturn = bytesAddressPair[0][1:2]
     stringresult = codereturn.decode("utf-8")     
     codereturn =int.from_bytes(codereturn, "big")
-    return codereturn
+    if codereturn == 1:
+        print("une boisson a été selectionnée")
+        return True
+    else:
+        print("la boisson n'a pas ete selectionnée")
+        return False
 
 
-def checkIfValidateDrink(bytesAddressPair):
+def DrinkSetToZero(bytesAddressPair):
     print(bytesAddressPair[0])
-    codedrink = bytesAddressPair[0][1:2]
-    #stringresult = codedrink.decode("utf-8")     
-    codedrink =int.from_bytes(codedrink, "big")
-    if codedrink == 1:
-        print("une boisson a été selectionné")
+    codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
+    codereturn =int.from_bytes(codereturn, "big")
+    if codereturn == 1:
+        print("mise a jour nombre boisson a un ")
         return True
     else:
-        print("la boisson n'a pas ete validé")
+        print("echou de ma  mise a jour du nombre de boisson")
         return False
-
-def checkIfMonnaieInserted(bytesAddressPair):
-    print("hellooooo",bytesAddressPair[0])
-    codemonnaie = bytesAddressPair[0][1:2]
-    #stringresult = codedrink.decode("utf-8")     
-    codemonnaie =int.from_bytes(codemonnaie, "big")
-    if codemonnaie == 1:
-        print("les pieces sont insérés")
-        return True
-    else:
-        print("les pieces ne sont pas inserer")
-        return False
-
-def compare(codedrink,codemonnaie):
-    if codedrink == True and codemonnaie == True:
-        print("la boisson a été validé et les pieces ont été insereés")
-        return True
-    elif codedrink == False and codemonnaie == True:
-        print("la boisson n'a pas été validé")
-        return False
-    else:
-        print("la boisson n'a été validé ou les pieces n'ont pas été insereés")
-        return False
-
-        
-
 
 
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
@@ -115,21 +89,16 @@ def compare(codedrink,codemonnaie):
 
 if __name__ == "__main__":
     first =  bytes.fromhex("2100")
+    ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
     initializeUT(UDPServerSocket)
-    #####################################first drink
+    ### set nb drinks to zero
+    sendto(UDPServerSocket,bytes.fromhex("040001"))
+    bytesAddressPair =recerivefrom(UDPServerSocket)
+    DrinkSetToZero(bytesAddressPair)
     ## selectionner une boisson
     sendto(UDPServerSocket,first)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
-    ### valider la boisson
-    sendto(UDPServerSocket,bytes.fromhex("23"))
-    validatedrink =recerivefrom(UDPServerSocket)
-    codedrink = checkIfValidateDrink(validatedrink)
-    ## inserer monnaie
-    sendto(UDPServerSocket,bytes.fromhex("2401"))
-    inserermonnaie =recerivefrom(UDPServerSocket)
-    codeimonnaie=  checkIfMonnaieInserted(inserermonnaie)
-    print(inserermonnaie)
-    ## comparer
-    compare(codedrink,codeimonnaie)
+
+

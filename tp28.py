@@ -22,12 +22,33 @@ def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
     successut = 1 
     UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
-    returnUT = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        returnUT = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+
     code = returnUT[0][1:2]
     if successut.__eq__(int.from_bytes(code, "big")) :
         print("initialisation UT reussite")
+        initsucess="success"
+        initverdic="pass"
+        return initsucess
     else:
-        print("initialisation UT echoué")
+        print("initialisation UT echoué")        
+        initfail="erreur"
+        initverdic="fail"
+        return initfail
+
+def recerivefrom(UDPServerSocket):
+    print("UDP server up and listening")
+    # Listen for incoming datagrams
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+    return bytesAddressPair
 
 
 def initiateDatagram():
@@ -40,11 +61,7 @@ def initiateDatagram():
 def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
 
-def recerivefrom(UDPServerSocket):
-    print("UDP server up and listening")
-    # Listen for incoming datagrams
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    return bytesAddressPair
+
 
 
 def checkIfCanSelectDrink(bytesAddressPair):
@@ -60,21 +77,35 @@ def checkIfCanSelectDrink(bytesAddressPair):
         return True
 
 
+def DrinkSetToZero(bytesAddressPair):
+    print(bytesAddressPair[0])
+    codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
+    codereturn =int.from_bytes(codereturn, "big")
+    if codereturn == 1:
+        print("la boisson n'est plus disponible ( mis a zero)")
+        return True
+    else:
+        print("echou de ma  mise a zero de la boisson")
+        return False
+
+
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
 ## 06 green tea | 07 black tea | 08 soap | 00 americano
 
 
 if __name__ == "__main__":
-    first =  bytes.fromhex("2108")
+    first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
     initializeUT(UDPServerSocket)
-    ## plus de boisson
-    sendto(UDPServerSocket,bytes.fromhex("3208"))
-    #bytesAddressPair =recerivefrom(UDPServerSocket)
-    #print(bytesAddressPair)
+    ### set nb drinks to zero
+    sendto(UDPServerSocket,bytes.fromhex("040000"))
+    bytesAddressPair =recerivefrom(UDPServerSocket)
+    DrinkSetToZero(bytesAddressPair)
+    
     ## selectionner une boisson
-    time.sleep(5)
+
     sendto(UDPServerSocket,first)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
