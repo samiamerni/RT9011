@@ -6,8 +6,8 @@ import csv
 import os
 
 
-localIP     = "192.168.56.9"
-myIP     = "192.168.56.1"
+localIP     = "10.188.168.50"
+myIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024

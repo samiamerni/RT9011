@@ -22,12 +22,33 @@ def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
     successut = 1 
     UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
-    returnUT = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        returnUT = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+
     code = returnUT[0][1:2]
     if successut.__eq__(int.from_bytes(code, "big")) :
         print("initialisation UT reussite")
+        initsucess="success"
+        initverdic="pass"
+        return initsucess
     else:
-        print("initialisation UT echoué")
+        print("initialisation UT echoué")        
+        initfail="erreur"
+        initverdic="fail"
+        return initfail
+
+def recerivefrom(UDPServerSocket):
+    print("UDP server up and listening")
+    # Listen for incoming datagrams
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+    return bytesAddressPair
 
 
 def initiateDatagram():
@@ -40,11 +61,7 @@ def initiateDatagram():
 def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
 
-def recerivefrom(UDPServerSocket):
-    print("UDP server up and listening")
-    # Listen for incoming datagrams
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    return bytesAddressPair
+
 
 
 def checkIfCanSelectDrink(bytesAddressPair):
@@ -65,18 +82,33 @@ def checkIfCanSelectDrink(bytesAddressPair):
 
 
 if __name__ == "__main__":
-    first =  bytes.fromhex("2108")
+    first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
-    initializeUT(UDPServerSocket)
+    #initializeUT(UDPServerSocket)
+    ## selectionner une boisson
+    
+        #sendto(UDPServerSocket,first)
+        #bytesAddressPair =recerivefrom(UDPServerSocket)
+    #selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
     ## plus de boisson
-    sendto(UDPServerSocket,bytes.fromhex("3208"))
+
+    #sendto(UDPServerSocket,bytes.fromhex("30"))
     #bytesAddressPair =recerivefrom(UDPServerSocket)
     #print(bytesAddressPair)
+    ## recuperer avant machine
+    sendto(UDPServerSocket,bytes.fromhex("10"))
+    infos =recerivefrom(UDPServerSocket)
+    print(infos)   
+    print(infos[0])
+    code = infos[0][2:3]  
+    print(infos[0][2:3],"--------------------")
+    sucre =int.from_bytes(code, "big")
+    print("le nbr de sucre est de: ",sucre)
     ## selectionner une boisson
-    time.sleep(5)
-    sendto(UDPServerSocket,first)
-    bytesAddressPair =recerivefrom(UDPServerSocket)
-    selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+    #time.sleep(5)
+    #sendto(UDPServerSocket,first)
+    #bytesAddressPair =recerivefrom(UDPServerSocket)
+    #selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
 
 

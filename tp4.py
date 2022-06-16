@@ -21,12 +21,23 @@ def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
     successut = 1 
     UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
-    returnUT = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        returnUT = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
+
     code = returnUT[0][1:2]
     if successut.__eq__(int.from_bytes(code, "big")) :
         print("initialisation UT reussite")
+        initsucess="success"
+        initverdic="pass"
+        return initsucess
     else:
-        print("initialisation UT echoué")
+        print("initialisation UT echoué")        
+        initfail="erreur"
+        initverdic="fail"
+        return initfail
 
 
 def initiateDatagram():
@@ -42,7 +53,11 @@ def sendto(UDPServerSocket,bytesToSend):
 def recerivefrom(UDPServerSocket):
     print("UDP server up and listening")
     # Listen for incoming datagrams
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    except socket.timeout:
+        initverdic="inconc"
+        return initverdic
     return bytesAddressPair
 
 def printPriceOfSelectedDrink(bytesAddressPair):
