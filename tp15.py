@@ -2,7 +2,7 @@ import socket
 import time
 import datetime
 import json
-localIP     = "10.30.5.10"
+localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
@@ -139,12 +139,12 @@ if __name__ == "__main__":
     validatedrink =recerivefrom(UDPServerSocket)
     codedrink = checkIfValidateDrink(validatedrink)
     ## inserer monnaie
-    sendto(UDPServerSocket,bytes.fromhex("2404"))
+    sendto(UDPServerSocket,bytes.fromhex("2403"))
     inserermonnaie =recerivefrom(UDPServerSocket)
     codeimonnaie=  checkIfMonnaieInserted(inserermonnaie)
     ## comparer
     compare(codedrink,codeimonnaie)
-    ## recuperer monnaie
+    ## recuperer Boisson
     sendto(UDPServerSocket,bytes.fromhex("25"))
     getdrink =recerivefrom(UDPServerSocket)
     codeGetDrink=  checkGetDrink(getdrink)

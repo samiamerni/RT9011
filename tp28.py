@@ -77,6 +77,19 @@ def checkIfCanSelectDrink(bytesAddressPair):
         return True
 
 
+def DrinkSetToZero(bytesAddressPair):
+    print(bytesAddressPair[0])
+    codereturn = bytesAddressPair[0][1:2]
+    stringresult = codereturn.decode("utf-8")     
+    codereturn =int.from_bytes(codereturn, "big")
+    if codereturn == 1:
+        print("la boisson n'est plus disponible ( mis a zero)")
+        return True
+    else:
+        print("echou de ma  mise a zero de la boisson")
+        return False
+
+
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
 ## 06 green tea | 07 black tea | 08 soap | 00 americano
 
@@ -85,30 +98,16 @@ if __name__ == "__main__":
     first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
-    #initializeUT(UDPServerSocket)
-    ## selectionner une boisson
+    initializeUT(UDPServerSocket)
+    ### set nb drinks to zero
+    sendto(UDPServerSocket,bytes.fromhex("040000"))
+    bytesAddressPair =recerivefrom(UDPServerSocket)
+    DrinkSetToZero(bytesAddressPair)
     
-        #sendto(UDPServerSocket,first)
-        #bytesAddressPair =recerivefrom(UDPServerSocket)
-    #selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
-    ## plus de boisson
-
-    #sendto(UDPServerSocket,bytes.fromhex("30"))
-    #bytesAddressPair =recerivefrom(UDPServerSocket)
-    #print(bytesAddressPair)
-    ## recuperer avant machine
-    sendto(UDPServerSocket,bytes.fromhex("10"))
-    infos =recerivefrom(UDPServerSocket)
-    print(infos)   
-    print(infos[0])
-    code = infos[0][2:3]  
-    print(infos[0][2:3],"--------------------")
-    sucre =int.from_bytes(code, "big")
-    print("le nbr de sucre est de: ",sucre)
     ## selectionner une boisson
-    #time.sleep(5)
-    #sendto(UDPServerSocket,first)
-    #bytesAddressPair =recerivefrom(UDPServerSocket)
-    #selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+
+    sendto(UDPServerSocket,first)
+    bytesAddressPair =recerivefrom(UDPServerSocket)
+    selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
 
 

@@ -74,20 +74,33 @@ def checkIfCanSelectDrink(bytesAddressPair):
         print("la boisson n'a pas ete selectionnée")
         return True
 
+def GobletSetToZero(bytesAddressPair):
+    print(bytesAddressPair[0])
+    codereturn = bytesAddressPair[0][1:2]  
+    codereturn =int.from_bytes(codereturn, "big")
+    print("-------------------",codereturn)
+    if codereturn == 0:
+        print("Goblets  mis a zero")
+        return True
+    else:
+        print("echou de la  mise a zero des goblets")
+        return False
+
 
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
 ## 06 green tea | 07 black tea | 08 soap | 00 americano
 
 
 if __name__ == "__main__":
-    first =  bytes.fromhex("2108")
+    first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
     initializeUT(UDPServerSocket)
-    ## plus de boisson
-    sendto(UDPServerSocket,bytes.fromhex("31"))
-    #bytesAddressPair =recerivefrom(UDPServerSocket)
-    #print(bytesAddressPair)
+    ### set nb goblets to zero
+    sendto(UDPServerSocket,bytes.fromhex("0300"))
+    bytesAddressPair =recerivefrom(UDPServerSocket)
+    print(bytesAddressPair)
+    GobletSetToZero(bytesAddressPair)
     ## selectionner une boisson
     time.sleep(5)
     sendto(UDPServerSocket,first)

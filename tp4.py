@@ -2,7 +2,7 @@ import socket
 import time
 import datetime
 import json
-localIP     = "192.168.1.40"
+localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024

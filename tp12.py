@@ -2,20 +2,13 @@ import socket
 import time
 import datetime
 import json
-localIP     = "10.30.5.10"
+localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
 msgFromServer  = "120"
 
 
-
-# Opening JSON file
-def openconfigfile():
-    f = open('config.json')
-    data = json.load(f)
-    stringjson = data["strings"]
-    return stringjson
 
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
@@ -70,10 +63,8 @@ def checkIfCanSelectDrink(bytesAddressPair):
     codereturn =int.from_bytes(codereturn, "big")
     if codereturn == 1:
         print("une boisson a été selectionnée")
-        return False
     else:
         print("la boisson n'a pas ete selectionée")
-        return False
 
 
 def checkIfValidateDrink(bytesAddressPair):
@@ -111,5 +102,4 @@ if __name__ == "__main__":
     sendto(UDPServerSocket,second)
     bytesAddressPair =recerivefrom(UDPServerSocket)
     selectdrink2 = checkIfCanSelectDrink(bytesAddressPair) 
-    print("resultat du test",selectdrink2)
 

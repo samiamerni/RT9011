@@ -2,20 +2,12 @@ import socket
 import time
 import datetime
 import json
-localIP     = "10.30.5.10"
+localIP     = "10.188.168.50"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
 msgFromServer  = "120"
 
-
-
-# Opening JSON file
-def openconfigfile():
-    f = open('config.json')
-    data = json.load(f)
-    stringjson = data["strings"]
-    return stringjson
 
 def initializeUT(UDPServerSocket):
     print("initialisagion de UT")
@@ -61,7 +53,17 @@ def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
 
 
-
+def checkIfMonnaieInserted(bytesAddressPair):
+    print(bytesAddressPair[0])
+    codemonnaie = bytesAddressPair[0][1:2]
+    #stringresult = codedrink.decode("utf-8")     
+    codemonnaie =int.from_bytes(codemonnaie, "big")
+    if codemonnaie == 1:
+        print("les pieces sont insérés")
+        return True
+    else:
+        print("les pieces ne sont pas inserer")
+        return False
 
 def checkIfCanSelectDrink(bytesAddressPair):
     print(bytesAddressPair[0])
@@ -107,9 +109,8 @@ if __name__ == "__main__":
     sendto(UDPServerSocket,bytes.fromhex("23"))
     validatedrink =recerivefrom(UDPServerSocket)
     codedrink = checkIfValidateDrink(validatedrink)
-    ## selectionnet une autre boisson apres la validation de la boisson
-    sendto(UDPServerSocket,second)
-    bytesAddressPair =recerivefrom(UDPServerSocket)
-    selectdrink2 = checkIfCanSelectDrink(bytesAddressPair) 
-    print("resultat du test",selectdrink2)
+    ## inserer monnaie
+    sendto(UDPServerSocket,bytes.fromhex("2404"))
+    inserermonnaie =recerivefrom(UDPServerSocket)
+    codeimonnaie=  checkIfMonnaieInserted(inserermonnaie)
 
