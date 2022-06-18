@@ -10,7 +10,9 @@ myIP     = "192.168.56.1"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
-idTp = 2
+idTp = "TP/COM/PRT/BO-02"
+reqid_1=1
+reqid_2=2
 null_ = "NaN"
 msgFromServer  = "23"
 bytesToSend =  bytes.fromhex(msgFromServer)
@@ -18,7 +20,7 @@ v1_ = "v1"
 time_data = 0
 
 
-listelogname = ["Time","IdTp","Action","RepId","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
+listelogname = ["Time","IdTp","reqID","Action","MessageType","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
 listeinit = []
 listedata = []
 
@@ -39,14 +41,14 @@ def initializeUT(UDPServerSocket):
         returnUT = UDPServerSocket.recvfrom(bufferSize)
     except socket.timeout:
         initverdic="inconc"
-        resultinc=[time_,idTp,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
+        resultinc=[time_,idTp,reqid_1,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
         listeinit.extend(resultinc)
         return initverdic
     
     coderp = returnUT[0][1:2]
-    repid = returnUT[0][:1]
+    messageType = returnUT[0][:1]
     initmsgreturn_=returnUT[0]
-    resultreq=[time_,idTp,msginitialiaze,repid,null_,coderp]
+    resultreq=[time_,idTp,reqid_1,msginitialiaze,messageType,null_,coderp]
     listeinit.extend(resultreq)
     if successut.__eq__(int.from_bytes(coderp, "big")) :
         print("initialisation UT reussite")
@@ -57,12 +59,11 @@ def initializeUT(UDPServerSocket):
         return initsucess
     else:
         print("initialisation UT echoué")
-        initfail="erreur"
-        initverdic="fail"
+        initfail="error"
+        initverdic="error"
         resulterror = [initfail,initverdic,initmsgreturn_,v1_]
         listeinit.extend(resulterror)
         return initfail
-
 
 def initiateDatagram():
     # Create a datagram socket
@@ -81,34 +82,36 @@ def recerivefrom(UDPServerSocket):
     time_data= datetime.datetime.fromtimestamp(time.time())
     try:
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        return bytesAddressPair
     except socket.timeout:
         initverdic="inconc"
-        resultinc=[time_data,idTp,bytesToSend,null_,null_,null_,null_,initverdic,null_,v1_]
+        resultinc=[time_data,idTp,reqid_2,bytesToSend,null_,null_,null_,null_,initverdic,null_,v1_]
         listedata.extend(resultinc)
         return initverdic
-    return bytesAddressPair
 
 def decodevalidate(bytesAddressPair):
-    msgreturn_=bytesAddressPair[0]
-    coderesult = bytesAddressPair[0][1:2]
-    coderesult = int.from_bytes(coderesult, "big")
-    print(bytesToSend) 
-    resultreq=[time_data,idTp,bytesToSend,null_,null_]
-    listedata.extend(resultreq)  
-    if coderesult == 0 :
-        print('on ne peut pas validé la boisson tant qu\'on ne l\'a pas selectionné')
-        datasuccess="success"
-        dataverdic="pass"
-        resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
-        listedata.extend(resultsucess)
-        return datasuccess
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        print("csdds",msgreturn_)
+        coderesult = bytesAddressPair[0][1:2]
+        coderesult = int.from_bytes(coderesult, "big")
+        resultreq=[time_data,idTp,reqid_2,bytesToSend,null_,null_]
+        listedata.extend(resultreq)  
+        if coderesult == 0 :
+            print('on ne peut pas validé la boisson tant qu\'on ne l\'a pas selectionné')
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata.extend(resultsucess)
+            return datasuccess
+        else:
+            print('une boisson est validée')  
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata.extend(resulterror)
+            return dataverdic
     else:
-        print('une boisson est validée')  
-        dataverdic="error"
-        resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
-        listedata.extend(resulterror)
-        return dataverdic
-
+        print('il est impossible de Conclure')
 
 def logfile():
     with open("log.csv", 'a', encoding='UTF8', newline='') as flog:
