@@ -10,6 +10,7 @@ $ python3 input.py et choisir un Tp de 1 à 33
  Les logs vont trouver dans un fichier log.csv après lancement d'un tp
 # Explication du fichier de log
 ["Time","IdTp","reqID","Action","MessageType","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
+
 time: date de lancement de la requete
 
 idTp: l'identifiant du tp exemple TP/COM/INFO/PRT/BO-01
