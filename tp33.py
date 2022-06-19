@@ -42,13 +42,14 @@ def initializeUT(UDPServerSocket):
 
 def recerivefrom(UDPServerSocket):
     print("UDP server up and listening")
-    # Listen for incoming datagrams
+    global time_data
+    time_data= datetime.datetime.fromtimestamp(time.time())
     try:
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        return bytesAddressPair
     except socket.timeout:
         initverdic="inconc"
         return initverdic
-    return bytesAddressPair
 
 
 def initiateDatagram():

@@ -11,37 +11,69 @@ msgFromServer  = "120"
 
 
 
+idTp = "TP/COM/PRT/BO-29"
+reqid_1=1
+null_ = "NaN"
+v1_ = "v1"
+time_data = 0
+
+
+listelogname = ["Time","IdTp","reqID","Action","MessageType","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
+listeinit = []
+listedata_1 = []
+listedata_2 = []
+listedata_3 = []
+
+
+
 def initializeUT(UDPServerSocket):
-    print("initialisagion de UT")
-    successut = 1 
-    UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
+    print("initialisation de UT")
+    successut = 1  ### x01 en entier est 1   1 == succes 0 == echoue
+    msginitialiaze=bytes.fromhex("00") # idtest initialiaze = 0
+    UDPServerSocket.sendto(msginitialiaze, (localIP, 4200))
+    time_= datetime.datetime.fromtimestamp(time.time())
     try:
         returnUT = UDPServerSocket.recvfrom(bufferSize)
     except socket.timeout:
         initverdic="inconc"
+        resultinc=[time_,idTp,reqid_1,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
+        listeinit.extend(resultinc)
         return initverdic
-
-    code = returnUT[0][1:2]
-    if successut.__eq__(int.from_bytes(code, "big")) :
+    
+    coderp = returnUT[0][1:2]
+    messageType = returnUT[0][:1]
+    initmsgreturn_=returnUT[0]
+    resultreq=[time_,idTp,reqid_1,msginitialiaze,messageType,null_,coderp]
+    listeinit.extend(resultreq)
+    if successut.__eq__(int.from_bytes(coderp, "big")) :
         print("initialisation UT reussite")
         initsucess="success"
         initverdic="pass"
+        resultsuccess= [initsucess,initverdic,initmsgreturn_,v1_]
+        listeinit.extend(resultsuccess)
         return initsucess
     else:
-        print("initialisation UT echoué")        
-        initfail="erreur"
-        initverdic="fail"
+        print("initialisation UT echoué")
+        initfail="error"
+        initverdic="error"
+        resulterror = [initfail,initverdic,initmsgreturn_,v1_]
+        listeinit.extend(resulterror)
         return initfail
 
-def recerivefrom(UDPServerSocket):
+def recerivefrom(UDPServerSocket,msgsend,idreq):
     print("UDP server up and listening")
+    listedata_1 = []
     # Listen for incoming datagrams
+    global time_data
+    time_data= datetime.datetime.fromtimestamp(time.time())
     try:
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        return bytesAddressPair
     except socket.timeout:
         initverdic="inconc"
+        resultinc=[time_data,idTp,idreq,msgsend,null_,null_,null_,null_,initverdic,null_,v1_]
+        listedata_1.extend(resultinc)
         return initverdic
-    return bytesAddressPair
 
 def initiateDatagram():
     # Create a datagram socket
@@ -52,32 +84,58 @@ def initiateDatagram():
 
 def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
+    return bytesToSend
 
 
-
-
-def checkIfCanSelectDrink(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]
-    codereturn =int.from_bytes(codereturn, "big")
-    if codereturn == 1:
-        print("une boisson a été selectionnée alors qu'il n'ya plus de goblets")
-        return False
+def checkIfCanSelectDrink(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        coderesult = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        listedata_2.extend(resultreq)
+        coderesult = int.from_bytes(coderesult, "big")    
+        if coderesult == 1 :
+            print("une boisson a été selectionnée alors qu'il n'ya plus de goblets")
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_2.extend(resulterror)
+            return dataverdic
+            
+        else:
+            print("la boisson n'a pas ete selectionnée")
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_2.extend(resultsucess)
+            return coderesult
     else:
-        print("la boisson n'a pas ete selectionnée")
-        return True
+        print('il est impossible de Conclure')
 
-def GobletSetToZero(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]  
-    codereturn =int.from_bytes(codereturn, "big")
-    print("-------------------",codereturn)
-    if codereturn == 1:
-        print("Goblets  mis a zero")
-        return True
+
+def GobletSetToZero(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        coderesult = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        listedata_1.extend(resultreq)
+        coderesult =int.from_bytes(coderesult, "big")
+        if coderesult == 1:
+            print("Goblets  mis a zero")
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_1.extend(resultsucess)
+            return coderesult
+        else:
+            print("echou de la  mise a zero des goblets")
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_1.extend(resulterror)
+            return dataverdic
     else:
-        print("echou de la  mise a zero des goblets")
-        return False
+        print('il est impossible de Conclure')
+
+
 
 
 ## 02 latté | 01 italiano  | 03 cappucino | 04 good caffe | 05 Earl grey
@@ -85,18 +143,19 @@ def GobletSetToZero(bytesAddressPair):
 
 
 if __name__ == "__main__":
+    idreq_1=2
+    idreq_2=3
     first =  bytes.fromhex("2100")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
     #initializeUT(UDPServerSocket)
     ### set nb goblets to zero
-    sendto(UDPServerSocket,bytes.fromhex("0300"))
-    bytesAddressPair =recerivefrom(UDPServerSocket)
-    print(bytesAddressPair)
-    GobletSetToZero(bytesAddressPair)
+    msgsend =sendto(UDPServerSocket,bytes.fromhex("0300"))
+    bytesAddressPair =recerivefrom(UDPServerSocket,msgsend,idreq_1)
+    GobletSetToZero(bytesAddressPair,msgsend,idreq_1)
     ## selectionner une boisson
-    sendto(UDPServerSocket,first)
-    bytesAddressPair =recerivefrom(UDPServerSocket)
-    selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+    msgsend =sendto(UDPServerSocket,first)
+    bytesAddressPair =recerivefrom(UDPServerSocket,msgsend,idreq_1)
+    selectdrink = checkIfCanSelectDrink(bytesAddressPair,msgsend,idreq_1) 
 
 

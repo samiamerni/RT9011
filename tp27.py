@@ -2,6 +2,8 @@ import socket
 import time
 import datetime
 import json
+import csv
+import os
 
 localIP     = "10.188.168.50"
 localPort   = 3000
@@ -10,46 +12,73 @@ bufferSize  = 1024
 msgFromServer  = "120"
 
 
+idTp = "TP/COM/PRT/BO-27"
+reqid_1=1
+null_ = "NaN"
+v1_ = "v1"
+time_data = 0
 
-# Opening JSON file
-def openconfigfile():
-    f = open('../config.json')
-    data = json.load(f)
-    stringjson = data["strings"]
-    return stringjson
+
+listelogname = ["Time","IdTp","reqID","Action","MessageType","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
+listeinit = []
+listedata_1 = []
+listedata_2 = []
+listedata_3 = []
+listedata_4 = []
+listedata_5 = []
+listedata_6 = []
+listedata_7 = []
+listedata_8 = []
+listedata_9 = []
 
 def initializeUT(UDPServerSocket):
-    print("initialisagion de UT")
-    successut = 1 
-    UDPServerSocket.sendto(bytes.fromhex("00"), (localIP, 4200))
+    print("initialisation de UT")
+    successut = 1  ### x01 en entier est 1   1 == succes 0 == echoue
+    msginitialiaze=bytes.fromhex("00") # idtest initialiaze = 0
+    UDPServerSocket.sendto(msginitialiaze, (localIP, 4200))
+    time_= datetime.datetime.fromtimestamp(time.time())
     try:
         returnUT = UDPServerSocket.recvfrom(bufferSize)
     except socket.timeout:
         initverdic="inconc"
+        resultinc=[time_,idTp,reqid_1,msginitialiaze,null_,null_,null_,null_,initverdic,null_,v1_]
+        listeinit.extend(resultinc)
         return initverdic
-
-    code = returnUT[0][1:2]
-    if successut.__eq__(int.from_bytes(code, "big")) :
+    
+    coderp = returnUT[0][1:2]
+    messageType = returnUT[0][:1]
+    initmsgreturn_=returnUT[0]
+    resultreq=[time_,idTp,reqid_1,msginitialiaze,messageType,null_,coderp]
+    listeinit.extend(resultreq)
+    if successut.__eq__(int.from_bytes(coderp, "big")) :
         print("initialisation UT reussite")
         initsucess="success"
         initverdic="pass"
+        resultsuccess= [initsucess,initverdic,initmsgreturn_,v1_]
+        listeinit.extend(resultsuccess)
         return initsucess
     else:
-        print("initialisation UT echoué")        
-        initfail="erreur"
-        initverdic="fail"
+        print("initialisation UT echoué")
+        initfail="error"
+        initverdic="error"
+        resulterror = [initfail,initverdic,initmsgreturn_,v1_]
+        listeinit.extend(resulterror)
         return initfail
 
-def recerivefrom(UDPServerSocket):
+def recerivefrom(UDPServerSocket,msgsend,idreq):
     print("UDP server up and listening")
+    listedata_1 = []
     # Listen for incoming datagrams
+    global time_data
+    time_data= datetime.datetime.fromtimestamp(time.time())
     try:
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        return bytesAddressPair
     except socket.timeout:
         initverdic="inconc"
+        resultinc=[time_data,idTp,idreq,msgsend,null_,null_,null_,null_,initverdic,null_,v1_]
+        listedata_1.extend(resultinc)
         return initverdic
-    return bytesAddressPair
-
 
 def initiateDatagram():
     # Create a datagram socket
@@ -60,88 +89,168 @@ def initiateDatagram():
 
 def sendto(UDPServerSocket,bytesToSend):
     UDPServerSocket.sendto(bytesToSend, (localIP, 4200))
+    return bytesToSend
 
 
-
-def checkIfCanSelectDrink(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]
-    stringresult = codereturn.decode("utf-8")     
-    codereturn =int.from_bytes(codereturn, "big")
-    if codereturn == 1:
-        print("une boisson a été selectionnée")
-        return False
+def checkIfCanSelectDrink(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        coderesult = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        listedata_3.extend(resultreq)
+        coderesult = int.from_bytes(coderesult, "big")    
+        if coderesult == 1 :
+            print('une boisson a été selectionnée')
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_3.extend(resultsucess)
+            return coderesult
+        else:
+            print('aucune boisson n\'a été selectionnée')   
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_3.extend(resulterror)
+            return dataverdic
     else:
-        print("la boisson n'a pas ete selectionnée")
-        return False
+        print('il est impossible de Conclure')
 
 
-def checkIfValidateDrink(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codedrink = bytesAddressPair[0][1:2]
-    #stringresult = codedrink.decode("utf-8")     
-    codedrink =int.from_bytes(codedrink, "big")
-    if codedrink == 1:
-        print("une boisson a été validé")
-        return False
+
+def checkIfValidateDrink(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        coderesult = bytesAddressPair[0][1:2]
+        coderesult = int.from_bytes(coderesult, "big")
+        resultreq=[time_data,idTp,idreq,msgsend,null_,null_]
+        listedata_5.extend(resultreq)  
+        if coderesult == 1 :
+            print('une boisson est validée')
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_5.extend(resultsucess)
+            return coderesult
+        else:
+            print("la boisson n'a pas ete validé") 
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_5.extend(resulterror)
+            return coderesult
     else:
-        print("la boisson n'a pas ete validé")
-        return True
+        print('il est impossible de Conclure')
 
-def checkIfMonnaieInserted(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codemonnaie = bytesAddressPair[0][1:2]
-    #stringresult = codedrink.decode("utf-8")     
-    codemonnaie =int.from_bytes(codemonnaie, "big")
-    if codemonnaie == 1:
-        print("les pieces sont insérés")
-        return True
+
+def checkIfMonnaieInserted(bytesAddressPair,msgsend,idreq):   
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        codemonnaie = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,codemonnaie,null_]
+        listedata_6.extend(resultreq)
+        codemonnaie = int.from_bytes(codemonnaie, "big")    
+        if codemonnaie == 1 :
+            print("les pieces sont inserées")
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_6.extend(resultsucess)
+            return codemonnaie
+        else:
+            print("les pieces ne sont pas inserées") 
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_6.extend(resulterror)
+            return codemonnaie
     else:
-        print("les pieces ne sont pas inserer")
-        return False
-def recupererboisson(bytesAddressPair):
-    print(bytesAddressPair[0])
-    code = bytesAddressPair[0][1:2]  
-    code =int.from_bytes(code, "big")
-    if code == 1:
-        print("une boisson est disponible et a été recupérée")
-        return True
+        print('il est impossible de Conclure')
+        
+def recupererboisson(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        getdrink = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,getdrink,null_]
+        listedata_7.extend(resultreq)
+        getdrink = int.from_bytes(getdrink, "big")    
+        if getdrink == 0 :
+            print("la boisson ne peut etre récupérer")
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_7.extend(resulterror)
+            return getdrink
+        else:
+            print("la boisson est récupérer")  
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_7.extend(resultsucess)
+            return getdrink
     else:
-        print("la boisson n'a pas ete disponible/recupérée")
-        return False
+        print('il est impossible de Conclure')
 
 
-def checkIfCanSelectSuggar(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codesuggar = bytesAddressPair[0][1:2]   
-    codesuggar =int.from_bytes(codesuggar, "big")
-    if  codesuggar == 0:
-        print("le sucre n'a pas été selectionné")
-        return False
+def checkIfCanSelectSuggar(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        print("vdfv",msgreturn_)
+        coderesult = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        listedata_4.extend(resultreq)
+        coderesult = int.from_bytes(coderesult, "big")  
+        if  coderesult == 0:
+            print("le sucre n'a pas été selectionné parce que la boisson ne prend pas de sucre")
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_4.extend(resultsucess)
+            return coderesult
+        else:
+            print("le sucre a  été selectionné")
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_4.extend(resulterror)
+            return coderesult
     else:
-        print("le sucre a  été selectionné")
-        return True
+        print('il est impossible de Conclure')
 
 
-def recupererNbrSucre(bytesAddressPair):
-    print(bytesAddressPair[0])
-    code = bytesAddressPair[0][1:2]  
-    sucre =int.from_bytes(code, "big")
-    print("le nbr de sucre est de: ",sucre)
-    return sucre
- 
-
-def checkIfMonnaieRecuperer(bytesAddressPair):
-    print(bytesAddressPair[0])
-    codereturn = bytesAddressPair[0][1:2]
-    stringresult = codereturn.decode("utf-8")     
-    codereturn =int.from_bytes(codereturn, "big")
-    if codereturn == 1:
-        print("la monnaie a été recuprée")
-        return True
+def recupererNbrSucre(bytesAddressPair,msgsend,idreq,list):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        coderesult = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        list.extend(resultreq)
+        coderesult =int.from_bytes(coderesult, "big")
+        print("le nbr de sucre est de: ",coderesult)
+        datasuccess="success"
+        dataverdic="pass"
+        resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+        list.extend(resultsucess)
+        return coderesult
     else:
-        print("la monnaie n\'a été recuprée")
-        return False
+        print('il est impossible de Conclure')
+
+def checkIfMonnaieRecuperer(bytesAddressPair,msgsend,idreq):
+    if bytesAddressPair != "inconc":
+        msgreturn_=bytesAddressPair[0]
+        codemonnaie = bytesAddressPair[0][1:2] 
+        resultreq=[time_data,idTp,idreq,msgsend,codemonnaie,null_]
+        listedata_8.extend(resultreq)
+        codemonnaie = int.from_bytes(codemonnaie, "big")    
+        if codemonnaie == 1 :
+            print("les pieces sont récupérées ") 
+            datasuccess="success"
+            dataverdic="pass"
+            resultsucess= [datasuccess,datasuccess,dataverdic,msgreturn_,v1_]
+            listedata_8.extend(resultsucess)
+            return codemonnaie
+        else:
+            print("les pieces ne sont pas récupérés soit le prix de la boisson est égal aux pièces insérées, soit la boisson n'est pas entièrement payé")
+            dataverdic="error"
+            resulterror = [dataverdic,dataverdic,dataverdic,msgreturn_,v1_]
+            listedata_8.extend(resulterror)
+            return codemonnaie
+    else:
+        print('il est impossible de Conclure')
 
 def compareSucre(avant,apres):
     if avant > apres:
@@ -151,7 +260,55 @@ def compareSucre(avant,apres):
         print('nombre de sucre n\'a pas deminué')
         return False
 
-
+def logfile():
+    with open("log.csv", 'a', encoding='UTF8', newline='') as flog:
+        writer=csv.writer(flog)
+        testfile=os.stat("log.csv").st_size == 0
+        if testfile is True:
+            writer.writerow(listelogname)
+            if not listeinit:
+                writer.writerow(listedata_1)
+                writer.writerow(listedata_2)
+                writer.writerow(listedata_3)
+                writer.writerow(listedata_4)
+                writer.writerow(listedata_5)
+                writer.writerow(listedata_6)
+                writer.writerow(listedata_7)
+                writer.writerow(listedata_8)
+                writer.writerow(listedata_9)
+            else:
+                writer.writerow(listeinit)
+                writer.writerow(listedata_1)
+                writer.writerow(listedata_2)
+                writer.writerow(listedata_3)
+                writer.writerow(listedata_4)
+                writer.writerow(listedata_5)
+                writer.writerow(listedata_6)
+                writer.writerow(listedata_7)
+                writer.writerow(listedata_8)
+                writer.writerow(listedata_9)
+        else:
+                if not listeinit:
+                    writer.writerow(listedata_1)
+                    writer.writerow(listedata_2)
+                    writer.writerow(listedata_3)
+                    writer.writerow(listedata_4)
+                    writer.writerow(listedata_5)
+                    writer.writerow(listedata_6)
+                    writer.writerow(listedata_7)
+                    writer.writerow(listedata_8)
+                    writer.writerow(listedata_9)
+                else:
+                    writer.writerow(listeinit)
+                    writer.writerow(listedata_1)
+                    writer.writerow(listedata_2)
+                    writer.writerow(listedata_3)
+                    writer.writerow(listedata_4)
+                    writer.writerow(listedata_5)
+                    writer.writerow(listedata_6)
+                    writer.writerow(listedata_7)
+                    writer.writerow(listedata_8)
+                    writer.writerow(listedata_9)
 
 
 
@@ -160,42 +317,50 @@ def compareSucre(avant,apres):
 
 
 if __name__ == "__main__":
+    idreq_1=2
+    idreq_2=3
+    idreq_3=4
+    idreq_4=5
+    idreq_5=6
+    idreq_6=7
+    idreq_7=8
+    idreq_8=9
     first =  bytes.fromhex("2108")
     ## renitiliaser UT
     UDPServerSocket = initiateDatagram()
     initializeUT(UDPServerSocket)
     ## recuperer avant machine
-    sendto(UDPServerSocket,bytes.fromhex("10"))
-    infos =recerivefrom(UDPServerSocket)
-    sucre_avant= recupererNbrSucre(infos)
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("10"))
+    infos =recerivefrom(UDPServerSocket,msgsend,idreq_1)
+    sucre_avant= recupererNbrSucre(infos,msgsend,idreq_1,listedata_2)
     ## selectionner une boisson
-    sendto(UDPServerSocket,first)
-    bytesAddressPair =recerivefrom(UDPServerSocket)
-    selectdrink = checkIfCanSelectDrink(bytesAddressPair) 
+    msgsend = sendto(UDPServerSocket,first)
+    bytesAddressPair =recerivefrom(UDPServerSocket,msgsend,idreq_2)
+    selectdrink = checkIfCanSelectDrink(bytesAddressPair,msgsend,idreq_2) 
     ### check if possible to select suggar
-    sendto(UDPServerSocket,bytes.fromhex("2209"))
-    validatesuggar =recerivefrom(UDPServerSocket)
-    checkIfCanSelectSuggar(validatesuggar) 
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("2209"))
+    validatesuggar =recerivefrom(UDPServerSocket,msgsend,idreq_3)
+    checkIfCanSelectSuggar(validatesuggar,msgsend,idreq_3) 
     ### valider la boisson
-    sendto(UDPServerSocket,bytes.fromhex("23"))
-    validatedrink =recerivefrom(UDPServerSocket)
-    codedrink = checkIfValidateDrink(validatedrink)
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("23"))
+    validatedrink =recerivefrom(UDPServerSocket,msgsend,idreq_4)
+    codedrink = checkIfValidateDrink(validatedrink,msgsend,idreq_4)
     ## inserer monnaie
-    sendto(UDPServerSocket,bytes.fromhex("2404"))
-    inserermonnaie =recerivefrom(UDPServerSocket)
-    codeimonnaie=  checkIfMonnaieInserted(inserermonnaie)
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("2404"))
+    inserermonnaie =recerivefrom(UDPServerSocket,msgsend,idreq_5)
+    codeimonnaie=  checkIfMonnaieInserted(inserermonnaie,msgsend,idreq_5)
     ### recuperer boisson
-    sendto(UDPServerSocket,bytes.fromhex("25"))
-    gettexte =recerivefrom(UDPServerSocket)
-    recupererboisson(gettexte) 
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("25"))
+    gettexte =recerivefrom(UDPServerSocket,msgsend,idreq_6)
+    recupererboisson(gettexte,msgsend,idreq_6) 
     ### texte recuperer votre monnaie
-    sendto(UDPServerSocket,bytes.fromhex("26"))
-    gettexte =recerivefrom(UDPServerSocket)
-    checkIfMonnaieRecuperer(gettexte)
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("26"))
+    gettexte =recerivefrom(UDPServerSocket,msgsend,idreq_7)
+    checkIfMonnaieRecuperer(gettexte,msgsend,idreq_7)
     ## recuperer avant machine
-    sendto(UDPServerSocket,bytes.fromhex("10"))
-    infos =recerivefrom(UDPServerSocket)
-    sucre_apres= recupererNbrSucre(infos)
+    msgsend = sendto(UDPServerSocket,bytes.fromhex("10"))
+    infos =recerivefrom(UDPServerSocket,msgsend,idreq_8)
+    sucre_apres= recupererNbrSucre(infos,msgsend,idreq_8,listedata_9)
     ### comaprer nbr sucres
     compareSucre(sucre_avant,sucre_apres)
-
+    logfile()
