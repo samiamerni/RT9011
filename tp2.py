@@ -92,7 +92,6 @@ def recerivefrom(UDPServerSocket):
 def decodevalidate(bytesAddressPair):
     if bytesAddressPair != "inconc":
         msgreturn_=bytesAddressPair[0]
-        print("csdds",msgreturn_)
         coderesult = bytesAddressPair[0][1:2]
         coderesult = int.from_bytes(coderesult, "big")
         resultreq=[time_data,idTp,reqid_2,bytesToSend,null_,null_]
