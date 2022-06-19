@@ -2,9 +2,11 @@
 # Cet outil marche en commande line
 # prérequis
 $ git clone https://github.com/samiamerni/RT9011.git
- Placer le fichier config.json dans le meme répertoire que le dossier RT9011
+
+Placer le fichier config.json dans le meme répertoire que le dossier RT9011
 # Pour lancer le projet
 $ cd RT9011/
+
 $ python3 input.py et choisir un Tp de 1 à 33
 # Ce tp fonctionne avec le localhost 
  Les logs vont trouver dans un fichier log.csv après lancement d'un tp
