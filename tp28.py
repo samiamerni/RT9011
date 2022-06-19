@@ -6,7 +6,8 @@ import json
 import csv
 import os
 
-localIP     = "10.188.168.50"
+localIP     = "localhost"
+myIP     = "localhost"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
@@ -81,7 +82,7 @@ def initiateDatagram():
     # Create a datagram socket
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     # Bind to address and ip
-    UDPServerSocket.bind((localIP, localPort))
+    UDPServerSocket.bind((myIP, localPort))
     return UDPServerSocket
 
 def sendto(UDPServerSocket,bytesToSend):

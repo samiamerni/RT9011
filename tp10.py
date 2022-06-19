@@ -7,8 +7,8 @@ import os
 
 
 
-localIP     = "192.168.56.9"
-myIP     = "192.168.56.1"
+localIP     = "localhost"
+myIP     = "localhost"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
@@ -166,7 +166,7 @@ def logfile():
 
 def compare(codedrink,codemonnaie):
     if codedrink == codemonnaie:
-        print("la boisson a étté sélectionné on peut insérer les pieces ont été inséreés")
+        print("la boisson a été sélectionné les pieces ont été inséreés")
         return False
     else :
         print("Impossible de récuperer les pieces car la boisson sélectionnée n'a pas été validé")

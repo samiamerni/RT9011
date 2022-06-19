@@ -7,12 +7,12 @@ import os
 
 
 
-localIP     = "192.168.56.9"
-myIP     = "192.168.56.1"
+localIP     = "localhost"
+myIP     = "localhost"
 localPort   = 3000
 Portmachine   = 4200
 bufferSize  = 1024
-idTp = "TP/COM/PRT/BO-09"
+idTp = "TP/COM/PRT/BO-12"
 reqid_1=1
 null_ = "NaN"
 v1_ = "v1"
@@ -123,9 +123,9 @@ def checkIfValidateDrink(bytesAddressPair,msgsend,idreq):
     if bytesAddressPair != "inconc":
         msgreturn_=bytesAddressPair[0]
         coderesult = bytesAddressPair[0][1:2]
-        coderesult = int.from_bytes(coderesult, "big")
-        resultreq=[time_data,idTp,idreq,msgsend,null_,null_]
-        listedata_2.extend(resultreq)  
+        resultreq=[time_data,idTp,idreq,msgsend,coderesult,null_]
+        listedata_2.extend(resultreq) 
+        coderesult = int.from_bytes(coderesult, "big") 
         if coderesult == 1 :
             print('une boisson est validée')
             datasuccess="success"
