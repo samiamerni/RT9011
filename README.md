@@ -3,13 +3,13 @@
 # prérequis
 $ git clone https://github.com/samiamerni/RT9011.git
 
-Placer le fichier config.json dans le meme répertoire que le dossier RT9011
+Placer le dossier RT9011 en meme niveau que le fichier config.json 
 # Pour lancer le projet
 $ cd RT9011/
 
 $ python3 input.py et choisir un Tp de 1 à 33
 # Ce tp fonctionne avec le localhost 
- Les logs vont trouver dans un fichier log.csv après lancement d'un tp
+ Les logs vont se  trouver dans un fichier log.csv après lancement d'un tp ( n'oubliez pas de modifier les ips dans chque tp)
 # Explication du fichier de log
 ["Time","IdTp","reqID","Action","MessageType","lenghtString","Attendu","Observe","Verdic", "Message","VersionOutil"]
 
